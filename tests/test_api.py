@@ -1,10 +1,10 @@
 import polars as pl
 
-import poranges as pr
+import poranges  # noqa: F401
 
 
-def test_rangeframe_merge_overlaps_matches_expected_projection() -> None:
-    rf = pr.RangeFrame(
+def test_dataframe_merge_overlaps_matches_expected_projection() -> None:
+    df = pl.DataFrame(
         {
             "Chrom": ["chr1", "chr1", "chr2"],
             "Start": [1, 4, 10],
@@ -13,16 +13,16 @@ def test_rangeframe_merge_overlaps_matches_expected_projection() -> None:
         }
     )
 
-    result = rf.merge_overlaps(count_col="Count", match_by="Chrom")
+    result = df.merge_overlaps(count_col="Count", match_by="Chrom")
 
-    assert result.to_polars().to_dicts() == [
+    assert result.to_dicts() == [
         {"Chrom": "chr1", "Start": 1, "End": 8, "Count": 2},
         {"Chrom": "chr2", "Start": 10, "End": 12, "Count": 1},
     ]
 
 
-def test_rangeframe_cluster_overlaps_adds_cluster_column() -> None:
-    rf = pr.RangeFrame(
+def test_dataframe_cluster_overlaps_adds_cluster_column() -> None:
+    df = pl.DataFrame(
         {
             "Chrom": ["chr1", "chr1", "chr1", "chr2"],
             "Start": [1, 3, 10, 1],
@@ -30,13 +30,13 @@ def test_rangeframe_cluster_overlaps_adds_cluster_column() -> None:
         }
     )
 
-    result = rf.cluster_overlaps(match_by="Chrom")
+    result = df.cluster_overlaps(match_by="Chrom")
 
-    assert result.to_polars()["Cluster"].to_list() == [0, 0, 1, 3]
+    assert result["Cluster"].to_list() == [0, 0, 1, 3]
 
 
-def test_rangeframe_overlap_and_subtract_overlaps_work() -> None:
-    left = pr.RangeFrame(
+def test_dataframe_overlap_and_subtract_overlaps_work() -> None:
+    left = pl.DataFrame(
         {
             "Chrom": ["chr1", "chr1"],
             "Start": [1, 1],
@@ -44,7 +44,7 @@ def test_rangeframe_overlap_and_subtract_overlaps_work() -> None:
             "ID": ["a", "b"],
         }
     )
-    right = pr.RangeFrame(
+    right = pl.DataFrame(
         {
             "Chrom": ["chr1"],
             "Start": [2],
@@ -52,11 +52,11 @@ def test_rangeframe_overlap_and_subtract_overlaps_work() -> None:
         }
     )
 
-    overlap = left.overlap(right, match_by="Chrom")
+    overlap = left.overlap_ranges(right, match_by="Chrom")
     subtract = left.subtract_overlaps(right, match_by="Chrom")
 
-    assert overlap.to_polars()["ID"].to_list() == ["a", "b"]
-    assert subtract.to_polars().to_dicts() == [
+    assert overlap["ID"].to_list() == ["a", "b"]
+    assert subtract.to_dicts() == [
         {"Chrom": "chr1", "Start": 1, "End": 2, "ID": "a"},
         {"Chrom": "chr1", "Start": 3, "End": 5, "ID": "a"},
         {"Chrom": "chr1", "Start": 1, "End": 2, "ID": "b"},
@@ -64,8 +64,8 @@ def test_rangeframe_overlap_and_subtract_overlaps_work() -> None:
     ]
 
 
-def test_rangeframe_nearest_ranges_appends_other_columns() -> None:
-    left = pr.RangeFrame(
+def test_dataframe_nearest_ranges_appends_other_columns() -> None:
+    left = pl.DataFrame(
         {
             "Chrom": ["chr1", "chr1"],
             "Start": [1, 20],
@@ -73,7 +73,7 @@ def test_rangeframe_nearest_ranges_appends_other_columns() -> None:
             "Name": ["a", "b"],
         }
     )
-    right = pr.RangeFrame(
+    right = pl.DataFrame(
         {
             "Chrom": ["chr1", "chr1"],
             "Start": [8, 30],
@@ -84,7 +84,7 @@ def test_rangeframe_nearest_ranges_appends_other_columns() -> None:
 
     result = left.nearest_ranges(right, match_by="Chrom", direction="forward")
 
-    assert result.to_polars().columns == [
+    assert result.columns == [
         "Chrom",
         "Start",
         "End",
@@ -95,11 +95,11 @@ def test_rangeframe_nearest_ranges_appends_other_columns() -> None:
         "Name_b",
         "Distance",
     ]
-    assert result.to_polars()["Distance"].to_list() == [4, 6]
+    assert result["Distance"].to_list() == [4, 6]
 
 
-def test_pyranges_defaults_to_chromosome_matching() -> None:
-    gr = pr.PyRanges(
+def test_bio_merge_defaults_to_chromosome_matching() -> None:
+    df = pl.DataFrame(
         {
             "Chromosome": ["chr1", "chr1", "chr2"],
             "Start": [1, 4, 1],
@@ -107,16 +107,16 @@ def test_pyranges_defaults_to_chromosome_matching() -> None:
         }
     )
 
-    result = gr.merge_overlaps()
+    result = df.bio.merge_overlaps()
 
-    assert result.to_polars().to_dicts() == [
+    assert result.to_dicts() == [
         {"Chromosome": "chr1", "Start": 1, "End": 8},
         {"Chromosome": "chr2", "Start": 1, "End": 2},
     ]
 
 
-def test_pyranges_overlap_supports_multiple_and_invert() -> None:
-    left = pr.PyRanges(
+def test_bio_overlap_supports_multiple_and_invert() -> None:
+    left = pl.DataFrame(
         {
             "Chromosome": ["chr1", "chr1", "chr2"],
             "Start": [1, 1, 10],
@@ -124,7 +124,7 @@ def test_pyranges_overlap_supports_multiple_and_invert() -> None:
             "ID": ["A", "a", "b"],
         }
     )
-    right = pr.PyRanges(
+    right = pl.DataFrame(
         {
             "Chromosome": ["chr1", "chr1"],
             "Start": [2, 2],
@@ -132,15 +132,15 @@ def test_pyranges_overlap_supports_multiple_and_invert() -> None:
         }
     )
 
-    multiple = left.overlap(right, multiple=True)
-    inverted = left.overlap(right, invert=True)
+    multiple = left.bio.overlap_ranges(right, multiple=True)
+    inverted = left.bio.overlap_ranges(right, invert=True)
 
-    assert multiple.to_polars()["ID"].to_list() == ["A", "A", "a", "a"]
-    assert inverted.to_polars()["ID"].to_list() == ["b"]
+    assert multiple["ID"].to_list() == ["A", "A", "a", "a"]
+    assert inverted["ID"].to_list() == ["b"]
 
 
-def test_pyranges_nearest_ranges_respects_strand_and_downstream_direction() -> None:
-    left = pr.PyRanges(
+def test_bio_nearest_ranges_respects_strand_and_downstream_direction() -> None:
+    left = pl.DataFrame(
         {
             "Chromosome": ["chr1", "chr1"],
             "Start": [10, 10],
@@ -149,7 +149,7 @@ def test_pyranges_nearest_ranges_respects_strand_and_downstream_direction() -> N
             "Name": ["plus", "minus"],
         }
     )
-    right = pr.PyRanges(
+    right = pl.DataFrame(
         {
             "Chromosome": ["chr1", "chr1"],
             "Start": [20, 1],
@@ -159,6 +159,19 @@ def test_pyranges_nearest_ranges_respects_strand_and_downstream_direction() -> N
         }
     )
 
-    result = left.nearest_ranges(right, direction="downstream")
+    result = left.bio.nearest_ranges(right, direction="downstream")
 
-    assert result.to_polars().sort("Name")["Hit_b"].to_list() == ["minus_hit", "plus_hit"]
+    assert result.sort("Name")["Hit_b"].to_list() == ["minus_hit", "plus_hit"]
+
+
+def test_bio_has_valid_strand_uses_dataframe_namespace() -> None:
+    df = pl.DataFrame(
+        {
+            "Chromosome": ["chr1", "chr1"],
+            "Start": [1, 2],
+            "End": [3, 4],
+            "Strand": ["+", "-"],
+        }
+    )
+
+    assert df.bio.has_valid_strand() is True

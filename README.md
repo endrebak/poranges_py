@@ -4,7 +4,6 @@ Python bindings for `../poranges`, built with `maturin`.
 
 The package exposes:
 
-- a Rust extension for the five interval operations currently implemented in `poranges`
-- a `RangeFrame` wrapper around `polars.DataFrame`
-- a `PyRanges` wrapper with `Chromosome` and optional `Strand` defaults matching the `pyrunges` API
-
+- a Rust extension for the interval operations implemented in `poranges`
+- direct `polars.DataFrame` methods such as `df.overlap_ranges(other)`
+- a `df.bio` namespace for `Chromosome` / `Strand` defaults such as `df.bio.overlap_ranges(other)`

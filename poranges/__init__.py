@@ -1,22 +1,33 @@
 from ._api import (
-    PyRanges,
-    RangeFrame,
+    bio_cluster_overlaps,
+    bio_has_valid_strand,
+    bio_merge_overlaps,
+    bio_nearest_ranges,
+    bio_overlap_ranges,
+    bio_subtract_overlaps,
     cluster_overlaps,
     merge_overlaps,
     nearest_ranges,
+    overlap_range_pairs,
+    overlap_ranges,
     range_overlap,
     range_overlap_pairs,
     subtract_overlaps,
 )
 
 __all__ = [
-    "PyRanges",
-    "RangeFrame",
+    "bio_cluster_overlaps",
+    "bio_has_valid_strand",
+    "bio_merge_overlaps",
+    "bio_nearest_ranges",
+    "bio_overlap_ranges",
+    "bio_subtract_overlaps",
     "cluster_overlaps",
     "merge_overlaps",
     "nearest_ranges",
+    "overlap_range_pairs",
+    "overlap_ranges",
     "range_overlap",
     "range_overlap_pairs",
     "subtract_overlaps",
 ]
-

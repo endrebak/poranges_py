@@ -5,9 +5,9 @@ build-backend = "maturin"
 [project]
 name = "poranges"
 version = "0.1.0"
-description = "Python bindings and a PyRanges-like API for the poranges Rust crate."
+description = "Python bindings that extend Polars DataFrames with poranges operations."
 requires-python = ">=3.11"
-dependencies = ["polars>=1.0"]
+dependencies = ["polars==1.39.3"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Rust",
@@ -20,4 +20,3 @@ module-name = "poranges._poranges"
 bindings = "pyo3"
 python-source = "."
 sdist = true
-
