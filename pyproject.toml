@@ -1,0 +1,23 @@
+[build-system]
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "poranges"
+version = "0.1.0"
+description = "Python bindings and a PyRanges-like API for the poranges Rust crate."
+requires-python = ">=3.11"
+dependencies = ["polars>=1.0"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Rust",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+
+[tool.maturin]
+module-name = "poranges._poranges"
+bindings = "pyo3"
+python-source = "."
+sdist = true
+
