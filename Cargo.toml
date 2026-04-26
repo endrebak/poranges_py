@@ -1,6 +1,6 @@
 [package]
 name = "poranges-python"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 [lib]
@@ -10,12 +10,5 @@ crate-type = ["cdylib"]
 [dependencies]
 poranges = { path = "../poranges" }
 polars-core = { version = "0.53.0", default-features = false, features = ["fmt", "strings", "dtype-categorical"] }
-polars-lazy = { version = "0.53.0", default-features = false, features = ["fmt", "dtype-categorical"] }
 pyo3 = { version = "0.27.0", features = ["extension-module"] }
-pyo3-polars = { version = "0.26.0", features = ["dtype-categorical", "lazy"] }
-
-[patch.crates-io]
-polars-core = { git = "https://github.com/pola-rs/polars.git", rev = "1cd236c60c01572c5ec6fdd252d8b20218d7b440", package = "polars-core" }
-polars-dtype = { git = "https://github.com/pola-rs/polars.git", rev = "1cd236c60c01572c5ec6fdd252d8b20218d7b440", package = "polars-dtype" }
-polars-lazy = { git = "https://github.com/pola-rs/polars.git", rev = "1cd236c60c01572c5ec6fdd252d8b20218d7b440", package = "polars-lazy" }
-pyo3-polars = { git = "https://github.com/pola-rs/polars.git", rev = "1cd236c60c01572c5ec6fdd252d8b20218d7b440", package = "pyo3-polars" }
+pyo3-polars = { version = "0.26.0", default-features = false, features = ["dtype-categorical"] }

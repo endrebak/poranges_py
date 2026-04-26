@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "poranges"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python bindings that extend Polars DataFrames with poranges operations."
 requires-python = ">=3.11"
 dependencies = ["polars==1.39.3"]

@@ -1,41 +1,133 @@
 import polars as pl
 
-import poranges  # noqa: F401
+import poranges as po
 
 
-def test_dataframe_merge_overlaps_matches_expected_projection() -> None:
-    df = pl.DataFrame(
-        {
-            "Chrom": ["chr1", "chr1", "chr2"],
-            "Start": [1, 4, 10],
-            "End": [5, 8, 12],
-            "Score": [1, 2, 3],
-        }
-    )
+EXPECTED_TOP_LEVEL = {
+    "benchmark_version",
+    "overlap_pairs",
+    "overlap_pairs_report",
+    "overlap",
+    "overlap_report",
+    "merge_overlaps",
+    "cluster_overlaps",
+    "count_overlaps",
+    "join_overlaps",
+    "intersect_overlaps",
+    "set_intersect_overlaps",
+    "set_union_overlaps",
+    "sort_ranges",
+    "extend_ranges",
+    "tile_ranges",
+    "clip_ranges",
+    "group_cumsum",
+    "max_disjoint_overlaps",
+    "split_overlaps",
+    "outer_ranges",
+    "complement_ranges",
+    "nearest",
+    "nearest_report",
+    "subtract_overlaps",
+    "bio_overlap",
+    "bio_overlap_report",
+    "bio_nearest",
+    "bio_nearest_report",
+    "bio_merge_overlaps",
+    "bio_cluster_overlaps",
+    "bio_count_overlaps",
+    "bio_join_overlaps",
+    "bio_intersect_overlaps",
+    "bio_set_intersect_overlaps",
+    "bio_set_union_overlaps",
+    "bio_sort_ranges",
+    "bio_extend_ranges",
+    "bio_tile_ranges",
+    "bio_clip_ranges",
+    "bio_group_cumsum",
+    "bio_max_disjoint_overlaps",
+    "bio_split_overlaps",
+    "bio_outer_ranges",
+    "bio_complement_ranges",
+    "bio_subtract_overlaps",
+    "bio_has_valid_strand",
+}
 
-    result = df.merge_overlaps(count_col="Count", match_by="Chrom")
+EXPECTED_R_METHODS = {
+    "overlap_pairs",
+    "overlap_pairs_report",
+    "overlap",
+    "overlap_report",
+    "merge_overlaps",
+    "cluster_overlaps",
+    "count_overlaps",
+    "join_overlaps",
+    "intersect_overlaps",
+    "set_intersect_overlaps",
+    "set_union_overlaps",
+    "sort_ranges",
+    "extend_ranges",
+    "tile_ranges",
+    "clip_ranges",
+    "group_cumsum",
+    "max_disjoint_overlaps",
+    "split_overlaps",
+    "outer_ranges",
+    "complement_ranges",
+    "nearest",
+    "nearest_report",
+    "subtract_overlaps",
+}
 
-    assert result.to_dicts() == [
-        {"Chrom": "chr1", "Start": 1, "End": 8, "Count": 2},
-        {"Chrom": "chr2", "Start": 10, "End": 12, "Count": 1},
-    ]
+EXPECTED_G_METHODS = {
+    "overlap",
+    "overlap_report",
+    "nearest",
+    "nearest_report",
+}
+
+EXPECTED_BIO_METHODS = {
+    "overlap",
+    "overlap_report",
+    "nearest",
+    "nearest_report",
+    "merge_overlaps",
+    "cluster_overlaps",
+    "count_overlaps",
+    "join_overlaps",
+    "intersect_overlaps",
+    "set_intersect_overlaps",
+    "set_union_overlaps",
+    "sort_ranges",
+    "extend_ranges",
+    "tile_ranges",
+    "clip_ranges",
+    "group_cumsum",
+    "max_disjoint_overlaps",
+    "split_overlaps",
+    "outer_ranges",
+    "complement_ranges",
+    "subtract_overlaps",
+    "has_valid_strand",
+}
 
 
-def test_dataframe_cluster_overlaps_adds_cluster_column() -> None:
-    df = pl.DataFrame(
-        {
-            "Chrom": ["chr1", "chr1", "chr1", "chr2"],
-            "Start": [1, 3, 10, 1],
-            "End": [4, 5, 12, 2],
-        }
-    )
+def test_import_registers_public_namespaces_and_top_level_functions() -> None:
+    assert EXPECTED_TOP_LEVEL <= set(po.__all__)
+    assert po.benchmark_version()
 
-    result = df.cluster_overlaps(match_by="Chrom")
+    df = pl.DataFrame({"Chromosome": ["chr1"], "Start": [1], "End": [2], "Strand": ["+"]})
+    lf = df.lazy()
 
-    assert result["Cluster"].to_list() == [0, 0, 1, 3]
+    assert EXPECTED_R_METHODS <= set(dir(df.r))
+    assert EXPECTED_G_METHODS <= set(dir(df.g))
+    assert EXPECTED_BIO_METHODS <= set(dir(df.bio))
+
+    assert EXPECTED_R_METHODS <= set(dir(lf.r))
+    assert EXPECTED_G_METHODS <= set(dir(lf.g))
+    assert EXPECTED_BIO_METHODS <= set(dir(lf.bio))
 
 
-def test_dataframe_overlap_and_subtract_overlaps_work() -> None:
+def test_top_level_overlap_and_range_namespaces_match_for_eager_and_lazy() -> None:
     left = pl.DataFrame(
         {
             "Chrom": ["chr1", "chr1"],
@@ -52,10 +144,72 @@ def test_dataframe_overlap_and_subtract_overlaps_work() -> None:
         }
     )
 
-    overlap = left.overlap_ranges(right, match_by="Chrom")
-    subtract = left.subtract_overlaps(right, match_by="Chrom")
+    expected = po.overlap(left, right, match_by="Chrom")
+    via_dataframe = left.r.overlap(right, match_by="Chrom")
+    via_lazy = left.lazy().r.overlap(right.lazy(), match_by="Chrom")
 
-    assert overlap["ID"].to_list() == ["a", "b"]
+    assert expected.to_dicts() == via_dataframe.to_dicts()
+    assert expected.to_dicts() == via_lazy.to_dicts()
+
+    report_frame, timings = po.overlap_report(left, right, match_by="Chrom")
+    assert report_frame.to_dicts() == expected.to_dicts()
+    assert timings["total"] > 0
+
+
+def test_top_level_nearest_and_range_namespaces_match_for_eager_and_lazy() -> None:
+    left = pl.DataFrame(
+        {
+            "Chrom": ["chr1", "chr1"],
+            "Start": [1, 20],
+            "End": [5, 25],
+            "Name": ["a", "b"],
+        }
+    )
+    right = pl.DataFrame(
+        {
+            "Chrom": ["chr1", "chr1"],
+            "Start": [8, 30],
+            "End": [10, 35],
+            "Name": ["x", "y"],
+        }
+    )
+
+    expected = po.nearest(left, right, match_by="Chrom", direction="forward")
+    via_dataframe = left.r.nearest(right, match_by="Chrom", direction="forward")
+    via_lazy = left.lazy().r.nearest(right.lazy(), match_by="Chrom", direction="forward")
+
+    assert expected.to_dicts() == via_dataframe.to_dicts()
+    assert expected.to_dicts() == via_lazy.to_dicts()
+    assert expected["Distance"].to_list() == [4, 6]
+
+    report_frame, timings = po.nearest_report(
+        left, right, match_by="Chrom", direction="forward"
+    )
+    assert report_frame.to_dicts() == expected.to_dicts()
+    assert timings["kernel"] > 0
+
+
+def test_count_overlaps_and_subtract_overlaps_forward_through_range_namespace() -> None:
+    left = pl.DataFrame(
+        {
+            "Chrom": ["chr1", "chr1"],
+            "Start": [1, 1],
+            "End": [5, 9],
+            "ID": ["a", "b"],
+        }
+    )
+    right = pl.DataFrame(
+        {
+            "Chrom": ["chr1"],
+            "Start": [2],
+            "End": [3],
+        }
+    )
+
+    assert po.count_overlaps(left, right, match_by="Chrom").to_list() == [1, 1]
+    assert left.r.count_overlaps(right, match_by="Chrom").to_list() == [1, 1]
+
+    subtract = left.r.subtract_overlaps(right, match_by="Chrom")
     assert subtract.to_dicts() == [
         {"Chrom": "chr1", "Start": 1, "End": 2, "ID": "a"},
         {"Chrom": "chr1", "Start": 3, "End": 5, "ID": "a"},
@@ -64,63 +218,13 @@ def test_dataframe_overlap_and_subtract_overlaps_work() -> None:
     ]
 
 
-def test_dataframe_nearest_ranges_appends_other_columns() -> None:
-    left = pl.DataFrame(
-        {
-            "Chrom": ["chr1", "chr1"],
-            "Start": [1, 20],
-            "End": [5, 25],
-            "Name": ["a", "b"],
-        }
-    )
-    right = pl.DataFrame(
-        {
-            "Chrom": ["chr1", "chr1"],
-            "Start": [8, 30],
-            "End": [10, 35],
-            "Name": ["x", "y"],
-        }
-    )
-
-    result = left.nearest_ranges(right, match_by="Chrom", direction="forward")
-
-    assert result.columns == [
-        "Chrom",
-        "Start",
-        "End",
-        "Name",
-        "Chrom_b",
-        "Start_b",
-        "End_b",
-        "Name_b",
-        "Distance",
-    ]
-    assert result["Distance"].to_list() == [4, 6]
-
-
-def test_bio_merge_defaults_to_chromosome_matching() -> None:
-    df = pl.DataFrame(
-        {
-            "Chromosome": ["chr1", "chr1", "chr2"],
-            "Start": [1, 4, 1],
-            "End": [5, 8, 2],
-        }
-    )
-
-    result = df.bio.merge_overlaps()
-
-    assert result.to_dicts() == [
-        {"Chromosome": "chr1", "Start": 1, "End": 8},
-        {"Chromosome": "chr2", "Start": 1, "End": 2},
-    ]
-
-
-def test_bio_overlap_supports_multiple_and_invert() -> None:
+def test_genomic_and_bio_namespaces_forward_to_rust() -> None:
     left = pl.DataFrame(
         {
             "Chromosome": ["chr1", "chr1", "chr2"],
             "Start": [1, 1, 10],
             "End": [3, 3, 11],
+            "Strand": ["+", "+", "-"],
             "ID": ["A", "a", "b"],
         }
     )
@@ -129,174 +233,37 @@ def test_bio_overlap_supports_multiple_and_invert() -> None:
             "Chromosome": ["chr1", "chr1"],
             "Start": [2, 2],
             "End": [3, 9],
+            "Strand": ["+", "+"],
         }
     )
 
-    multiple = left.bio.overlap_ranges(right, multiple=True)
-    inverted = left.bio.overlap_ranges(right, invert=True)
+    top_level = po.bio_overlap(left, right, multiple=True)
+    genomic = left.g.overlap(right, multiple=True)
+    bio = left.bio.overlap(right, multiple=True)
+    inverted = left.bio.overlap(right, invert=True)
 
-    assert multiple["ID"].to_list() == ["A", "A", "a", "a"]
+    assert top_level["ID"].to_list() == ["A", "A", "a", "a"]
+    assert top_level.to_dicts() == genomic.to_dicts()
+    assert top_level.to_dicts() == bio.to_dicts()
     assert inverted["ID"].to_list() == ["b"]
 
 
-def test_bio_nearest_ranges_respects_strand_and_downstream_direction() -> None:
-    left = pl.DataFrame(
-        {
-            "Chromosome": ["chr1", "chr1"],
-            "Start": [10, 10],
-            "End": [12, 12],
-            "Strand": ["+", "-"],
-            "Name": ["plus", "minus"],
-        }
-    )
-    right = pl.DataFrame(
-        {
-            "Chromosome": ["chr1", "chr1"],
-            "Start": [20, 1],
-            "End": [21, 2],
-            "Strand": ["+", "-"],
-            "Hit": ["plus_hit", "minus_hit"],
-        }
-    )
-
-    result = left.bio.nearest_ranges(right, direction="downstream")
-
-    assert result.sort("Name")["Hit_b"].to_list() == ["minus_hit", "plus_hit"]
-
-
-def test_bio_has_valid_strand_uses_dataframe_namespace() -> None:
+def test_bio_namespace_exposes_broader_genomic_operations() -> None:
     df = pl.DataFrame(
         {
-            "Chromosome": ["chr1", "chr1"],
-            "Start": [1, 2],
-            "End": [3, 4],
-            "Strand": ["+", "-"],
+            "Chromosome": ["chr1", "chr1", "chr2"],
+            "Start": [1, 4, 1],
+            "End": [5, 8, 2],
+            "Strand": ["+", "+", "-"],
         }
     )
 
+    merged = po.bio_merge_overlaps(df)
+    clustered = df.bio.cluster_overlaps()
+
+    assert merged.to_dicts() == [
+        {"Chromosome": "chr1", "Start": 1, "End": 8, "Strand": "+"},
+        {"Chromosome": "chr2", "Start": 1, "End": 2, "Strand": "-"},
+    ]
+    assert clustered["Cluster"].to_list() == [0, 0, 2]
     assert df.bio.has_valid_strand() is True
-
-
-def test_overlap_ranges_report_returns_dataframe_and_structured_timings() -> None:
-    left = pl.DataFrame(
-        {
-            "Chrom": ["chr1", "chr1"],
-            "Start": [1, 10],
-            "End": [5, 15],
-            "ID": ["a", "b"],
-        }
-    )
-    right = pl.DataFrame(
-        {
-            "Chrom": ["chr1", "chr1"],
-            "Start": [2, 12],
-            "End": [4, 14],
-        }
-    )
-
-    report = poranges.overlap_ranges_report(left, right, match_by="Chrom")
-
-    assert isinstance(report.result, pl.DataFrame)
-    assert report.result.to_dicts() == poranges.overlap_ranges(
-        left, right, match_by="Chrom"
-    ).to_dicts()
-    assert report.timings.total > 0
-    assert report.timings.kernel > 0
-    assert "total" in report.timings.as_dict()
-    assert "total" in report.timings.as_dict(milliseconds=True)
-
-
-def test_parallel_config_and_dataframe_report_method_roundtrip() -> None:
-    left = pl.DataFrame(
-        {
-            "Chrom": [f"chr{i}" for i in range(64) for _ in range(4)],
-            "Start": [i * 10 for i in range(256)],
-            "End": [i * 10 + 5 for i in range(256)],
-        }
-    )
-    right = pl.DataFrame(
-        {
-            "Chrom": [f"chr{i}" for i in range(64) for _ in range(4)],
-            "Start": [i * 10 + 1 for i in range(256)],
-            "End": [i * 10 + 4 for i in range(256)],
-        }
-    )
-
-    report = left.overlap_ranges_report(
-        right, match_by="Chrom", parallel=poranges.ParallelConfig.auto()
-    )
-
-    assert isinstance(report, poranges.OperationReport)
-    assert report.result.height == left.height
-    assert report.timings.total > 0
-
-
-def test_lazy_report_dispatch_returns_lazyframe_and_timings() -> None:
-    left = pl.DataFrame(
-        {
-            "Chrom": ["chr1", "chr1"],
-            "Start": [1, 20],
-            "End": [5, 25],
-            "Name": ["a", "b"],
-        }
-    ).lazy()
-    right = pl.DataFrame(
-        {
-            "Chrom": ["chr1", "chr1"],
-            "Start": [8, 30],
-            "End": [10, 35],
-            "Name": ["x", "y"],
-        }
-    ).lazy()
-
-    report = poranges.nearest_ranges_report(
-        left,
-        right,
-        match_by="Chrom",
-        direction="forward",
-        parallel="serial",
-    )
-
-    assert isinstance(report.result, pl.LazyFrame)
-    collected = report.result.collect()
-    expected = poranges.nearest_ranges(
-        left.collect(),
-        right.collect(),
-        match_by="Chrom",
-        direction="forward",
-        parallel="serial",
-    )
-    assert collected.to_dicts() == expected.to_dicts()
-    assert report.timings.total > 0
-
-
-def test_range_and_genomic_namespace_aliases_work_for_eager_and_lazy() -> None:
-    left = pl.DataFrame(
-        {
-            "Chromosome": ["chr1"],
-            "Start": [10],
-            "End": [12],
-            "Strand": ["+"],
-            "Name": ["plus"],
-        }
-    )
-    right = pl.DataFrame(
-        {
-            "Chromosome": ["chr1"],
-            "Start": [20],
-            "End": [21],
-            "Strand": ["+"],
-            "Hit": ["plus_hit"],
-        }
-    )
-
-    eager_report = left.g.nearest_ranges_report(right, direction="downstream")
-    expected_eager = left.g.nearest_ranges(right, direction="downstream")
-    lazy_report = left.lazy().r.overlap_ranges_report(
-        right.lazy(),
-        match_by="Chromosome",
-    )
-
-    assert eager_report.result.to_dicts() == expected_eager.to_dicts()
-    assert isinstance(lazy_report.result, pl.LazyFrame)
-    assert lazy_report.result.collect().height == 0
