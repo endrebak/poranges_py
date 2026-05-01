@@ -17,8 +17,8 @@ pb = pytest.importorskip("polars_bio")
 
 RANGE_COLUMNS = GenomicColumns(
     chromosome="chrom",
-    start="start",
-    end="end",
+    start="Start",
+    end="End",
     strand="strand",
     gene="gene",
     transcript_id="transcript_id",
@@ -30,19 +30,36 @@ class OverlapCase:
     name: str
     polaranges_kwargs: dict[str, Any]
     polars_bio_kwargs: dict[str, Any]
+    strand_behavior: str = "ignore"
 
 
-@pytest.fixture(scope="module")
-def simple_overlap_case() -> OverlapCase:
-    return OverlapCase(
-        name="simple",
-        polaranges_kwargs={"match_by": "chrom"},
-        polars_bio_kwargs={
-            "cols1": ["chrom", "start", "end"],
-            "cols2": ["chrom", "start", "end"],
-            "output_type": "polars.DataFrame",
-        },
-    )
+@pytest.fixture(
+    scope="module",
+    params=[
+        OverlapCase(
+            name="ignore_strand",
+            polaranges_kwargs={"match_by": "chrom"},
+            polars_bio_kwargs={
+                "cols1": ["chrom", "Start", "End"],
+                "cols2": ["chrom", "Start", "End"],
+                "output_type": "polars.DataFrame",
+            },
+        ),
+        OverlapCase(
+            name="same_strand",
+            polaranges_kwargs={"match_by": ["chrom", "strand"]},
+            polars_bio_kwargs={
+                "cols1": ["chrom", "Start", "End"],
+                "cols2": ["chrom", "Start", "End"],
+                "output_type": "polars.DataFrame",
+            },
+            strand_behavior="same",
+        ),
+    ],
+    ids=lambda case: case.name,
+)
+def overlap_case(request: pytest.FixtureRequest) -> OverlapCase:
+    return request.param
 
 
 @st.composite
@@ -54,7 +71,7 @@ def overlap_inputs(draw: st.DrawFn) -> tuple[pl.DataFrame, pl.DataFrame]:
         max_position=500,
         max_interval_width=50,
         columns=RANGE_COLUMNS,
-        include_strand=False,
+        include_strand=True,
         include_gene=False,
         include_transcript_id=False,
     )
@@ -63,16 +80,16 @@ def overlap_inputs(draw: st.DrawFn) -> tuple[pl.DataFrame, pl.DataFrame]:
     return left, right
 
 
-@given(overlap_inputs())
+@given(inputs=overlap_inputs())
 @settings(max_examples=50, deadline=None)
 def test_overlap_pairs_match_polars_bio_for_simple_genomic_overlap(
     inputs: tuple[pl.DataFrame, pl.DataFrame],
-    simple_overlap_case: OverlapCase,
+    overlap_case: OverlapCase,
 ) -> None:
     left, right = inputs
 
-    expected = _polars_bio_overlap_pairs(left, right, simple_overlap_case)
-    observed = _polaranges_overlap_pairs(left, right, simple_overlap_case)
+    expected = _polars_bio_overlap_pairs(left, right, overlap_case)
+    observed = _polaranges_overlap_pairs(left, right, overlap_case)
 
     assert observed == expected
 
@@ -109,5 +126,10 @@ def _polars_bio_overlap_pairs(
 
     if isinstance(overlaps, pl.LazyFrame):
         overlaps = overlaps.collect()
+
+    if case.strand_behavior == "same":
+        overlaps = overlaps.filter(pl.col("strand_1") == pl.col("strand_2"))
+    elif case.strand_behavior != "ignore":
+        raise ValueError(f"unsupported strand behavior: {case.strand_behavior}")
 
     return set(zip(overlaps["left_id_1"], overlaps["right_id_2"], strict=True))
