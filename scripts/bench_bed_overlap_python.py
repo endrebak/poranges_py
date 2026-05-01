@@ -11,7 +11,7 @@ from typing import TypeVar
 
 import polars as pl
 
-import poranges
+import polaranges
 
 T = TypeVar("T")
 
@@ -19,8 +19,8 @@ T = TypeVar("T")
 def main() -> None:
     args = parse_args()
 
-    print("poranges Python BED overlap benchmark", flush=True)
-    print(f"core version: {poranges.benchmark_version()}", flush=True)
+    print("polaranges Python BED overlap benchmark", flush=True)
+    print(f"core version: {polaranges.benchmark_version()}", flush=True)
     print(f"python: {sys.version.split()[0]}", flush=True)
     print(f"polars: {pl.__version__}", flush=True)
     print("timing unit: seconds", flush=True)
@@ -75,7 +75,7 @@ def main() -> None:
         )
         pairs_report = run_repeated(
             args.reps,
-            lambda: poranges.overlap_pairs_report(left, right, **common_kwargs),
+            lambda: polaranges.overlap_pairs_report(left, right, **common_kwargs),
         )
         pairs = pairs_report.last[:2]
         pair_count = len(pairs[0])
@@ -94,7 +94,7 @@ def main() -> None:
 
     overlap_report = run_repeated(
         args.reps,
-        lambda: poranges.overlap_report(left, right, **common_kwargs),
+        lambda: polaranges.overlap_report(left, right, **common_kwargs),
     )
     overlap = overlap_report.last[0]
     print_operation_report("overlap", overlap.height, overlap_report)
@@ -105,7 +105,7 @@ def main() -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Benchmark poranges from Python over eager Polars DataFrames.",
+        description="Benchmark polaranges from Python over eager Polars DataFrames.",
     )
     parser.add_argument("left", type=Path)
     parser.add_argument("right", type=Path)

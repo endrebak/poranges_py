@@ -1,4 +1,4 @@
-from . import _poranges as _poranges
+from . import _polaranges as _polaranges
 from .accessors import (
     benchmark_version,
     bio_clip_ranges,

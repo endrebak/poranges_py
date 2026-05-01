@@ -1,6 +1,6 @@
 import polars as pl
 
-import poranges as po
+import polaranges as po
 
 
 EXPECTED_TOP_LEVEL = {

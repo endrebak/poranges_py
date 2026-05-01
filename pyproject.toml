@@ -3,9 +3,9 @@ requires = ["maturin>=1.7,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "poranges"
+name = "polaranges"
 version = "0.1.1"
-description = "Python bindings that extend Polars DataFrames with poranges operations."
+description = "Python bindings that extend Polars DataFrames with polaranges operations."
 requires-python = ">=3.11"
 dependencies = ["polars==1.39.3"]
 classifiers = [
@@ -15,8 +15,18 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 
+[project.optional-dependencies]
+test = [
+  "hypothesis>=6.0",
+  "pytest>=8.0",
+]
+develop = [
+  "hypothesis>=6.0",
+  "pytest>=8.0",
+]
+
 [tool.maturin]
-module-name = "poranges._poranges"
+module-name = "polaranges._polaranges"
 bindings = "pyo3"
 python-source = "."
 sdist = true

@@ -1,14 +1,14 @@
 [package]
-name = "poranges-python"
+name = "polaranges-python"
 version = "0.1.1"
 edition = "2021"
 
 [lib]
-name = "_poranges"
+name = "_polaranges"
 crate-type = ["cdylib"]
 
 [dependencies]
-poranges = { path = "../poranges" }
+polaranges = { path = "../polaranges" }
 polars-core = { version = "0.53.0", default-features = false, features = ["fmt", "strings", "dtype-categorical"] }
 pyo3 = { version = "0.27.0", features = ["extension-module"] }
 pyo3-polars = { version = "0.26.0", default-features = false, features = ["dtype-categorical"] }

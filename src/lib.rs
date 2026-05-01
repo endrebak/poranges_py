@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, HashMap};
 
-use poranges::{
+use polaranges::{
     benchmark, BioClipOptions, BioClusterOptions, BioComplementRangesOptions,
     BioCountOverlapsOptions, BioDataFrameRanges, BioExtendOptions, BioGroupCumsumOptions,
     BioIntersectOverlapsOptions, BioJoinOverlapsOptions, BioMaxDisjointOptions, BioMergeOptions,
@@ -392,7 +392,7 @@ fn bio_set_union_overlaps_options(
     })
 }
 
-fn to_py_err(err: poranges::RangeFrameError) -> PyErr {
+fn to_py_err(err: polaranges::RangeFrameError) -> PyErr {
     PyValueError::new_err(err.to_string())
 }
 
@@ -426,7 +426,7 @@ fn timings_to_map(timings: &Timings) -> BTreeMap<String, f64> {
 }
 
 fn overlap_pairs_report_tuple(
-    report: ExecReport<poranges::OverlapPairs>,
+    report: ExecReport<polaranges::OverlapPairs>,
 ) -> (Vec<u32>, Vec<u32>, BTreeMap<String, f64>) {
     let timings = report.timings.unwrap_or_default();
     (
@@ -2399,7 +2399,7 @@ fn benchmark_version() -> String {
 }
 
 #[pymodule]
-fn _poranges(_py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn _polaranges(_py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(benchmark_version, m)?)?;
     m.add_function(wrap_pyfunction!(overlap_pairs, m)?)?;
     m.add_function(wrap_pyfunction!(overlap_pairs_report, m)?)?;

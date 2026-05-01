@@ -1583,6 +1583,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "polaranges"
+version = "0.3.1"
+dependencies = [
+ "clap",
+ "polars-core",
+ "polars-dtype",
+ "polars-io",
+ "polars-lazy",
+ "polars-ops",
+ "psm",
+ "rayon",
+ "ruranges-core",
+ "rustc-hash",
+ "thiserror 2.0.18",
+ "unicode-segmentation",
+]
+
+[[package]]
+name = "polaranges-python"
+version = "0.1.1"
+dependencies = [
+ "polaranges",
+ "polars-core",
+ "pyo3",
+ "pyo3-polars",
+]
+
+[[package]]
 name = "polars"
 version = "0.53.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2099,34 +2127,6 @@ dependencies = [
  "stacker",
  "uuid",
  "version_check",
-]
-
-[[package]]
-name = "poranges"
-version = "0.3.1"
-dependencies = [
- "clap",
- "polars-core",
- "polars-dtype",
- "polars-io",
- "polars-lazy",
- "polars-ops",
- "psm",
- "rayon",
- "ruranges-core",
- "rustc-hash",
- "thiserror 2.0.18",
- "unicode-segmentation",
-]
-
-[[package]]
-name = "poranges-python"
-version = "0.1.1"
-dependencies = [
- "polars-core",
- "poranges",
- "pyo3",
- "pyo3-polars",
 ]
 
 [[package]]

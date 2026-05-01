@@ -5,7 +5,7 @@ from typing import Any, TypeAlias
 
 import polars as pl
 
-from . import _poranges
+from . import _polaranges
 
 FrameLike: TypeAlias = pl.DataFrame | pl.LazyFrame | Any
 PairsResult: TypeAlias = tuple[list[int], list[int]]
@@ -53,7 +53,7 @@ def _normalize_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
 
 
 def _call_unary(name: str, df: FrameLike, /, *args: Any, **kwargs: Any) -> Any:
-    return getattr(_poranges, name)(
+    return getattr(_polaranges, name)(
         _coerce_frame(df), *args, **_normalize_kwargs(kwargs)
     )
 
@@ -61,13 +61,13 @@ def _call_unary(name: str, df: FrameLike, /, *args: Any, **kwargs: Any) -> Any:
 def _call_binary(
     name: str, left: FrameLike, right: FrameLike, /, *args: Any, **kwargs: Any
 ) -> Any:
-    return getattr(_poranges, name)(
+    return getattr(_polaranges, name)(
         _coerce_frame(left), _coerce_frame(right), *args, **_normalize_kwargs(kwargs)
     )
 
 
 def benchmark_version() -> str:
-    return _poranges.benchmark_version()
+    return _polaranges.benchmark_version()
 
 
 def overlap_pairs(
