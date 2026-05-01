@@ -18,10 +18,12 @@ classifiers = [
 [project.optional-dependencies]
 test = [
   "hypothesis>=6.0",
+  "polars-bio>=0.29",
   "pytest>=8.0",
 ]
 develop = [
   "hypothesis>=6.0",
+  "polars-bio>=0.29",
   "pytest>=8.0",
 ]
 
