@@ -2572,8 +2572,6 @@ dependencies = [
 [[package]]
 name = "ruranges-core"
 version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f07c104ece29a9121cbcee4d10521c8026624652bfe58b17c4eb68c496212417"
 dependencies = [
  "num-traits",
  "radsort",

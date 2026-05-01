@@ -42,6 +42,20 @@ For a quicker install without pytest:
 ./scripts/install-local.sh --skip-tests
 ```
 
+By default, the local `../polaranges` checkout still uses the `ruranges-core`
+version declared in its `Cargo.toml`, which normally resolves from crates.io.
+To test against a sibling `../ruranges-core` checkout for one install run:
+
+```bash
+./scripts/install-local.sh --local-ruranges-core
+```
+
+Or point at a specific checkout:
+
+```bash
+./scripts/install-local.sh --ruranges-core /path/to/ruranges-core
+```
+
 The package exposes:
 
 - a Rust extension for the interval operations implemented in `polaranges`
